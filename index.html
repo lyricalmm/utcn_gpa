@@ -85,7 +85,14 @@
         <footer>
             <button id="calculate-btn" class="calculate-btn">Calculează Media</button>
         </footer>
+
+        <div class="credit-text">Made by RazvaB52</div>
     </main>
+
+    <div class="dobby-container">
+        <img src="dobby.jpeg" alt="Dobby is watching" class="dobby-img">
+        <p class="dobby-text">Dobby is watching</p>
+    </div>
 
     <div class="admin-trigger">
         <button id="update-db-btn" class="btn-text" style="color: rgba(255,255,255,0.7); margin-right: 15px;">↻
@@ -116,16 +123,25 @@
                 </div>
             </div>
             <div class="admin-body">
-                <div class="admin-sidebar">
-                    <button class="tab-btn active" data-tab="universities">Universități / Editare JSON</button>
-                    <button class="tab-btn" data-tab="faculties">Facultăți</button>
-                    <button class="tab-btn" data-tab="specializations">Specializări</button>
+                <div class="admin-navigation">
+                    <div id="admin-breadcrumbs" class="admin-breadcrumbs">
+                        <!-- Breadcrumbs will go here -->
+                        <span class="crumb active">Universități</span>
+                    </div>
                 </div>
-                <div class="admin-view" id="admin-view-container">
-                    <!-- Dynamic Content -->
-                </div>
-                <div class="admin-form" id="admin-form-inputs">
-                    <!-- Edit Forms -->
+                <div class="admin-content-area">
+                    <div id="admin-list-view" class="admin-list-view">
+                        <!-- Dynamic List Items -->
+                    </div>
+                    <div id="admin-editor-view" class="admin-editor-view hidden">
+                        <!-- Forms for adding/editing -->
+                        <h3 id="editor-title">Adaugă Universitate</h3>
+                        <div id="editor-inputs"></div>
+                        <div class="editor-actions">
+                            <button id="editor-cancel-btn">Anulează</button>
+                            <button id="editor-save-btn" class="primary">Salvează</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

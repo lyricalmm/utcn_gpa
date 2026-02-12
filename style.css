@@ -110,6 +110,7 @@ h1 {
     font-size: 2.5rem;
     font-weight: 700;
     background: linear-gradient(to right, #fff, #cbd5e1);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.5rem;
@@ -161,6 +162,8 @@ h1 {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
+    /* Allow wrapping */
 }
 
 .select-group:last-child {
@@ -168,7 +171,8 @@ h1 {
 }
 
 .app-select {
-    flex: 1;
+    flex: 1 1 200px;
+    /* Allow shrinking/growing, min-width 200px */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     color: white;
@@ -176,6 +180,10 @@ h1 {
     border-radius: 8px;
     outline: none;
     cursor: pointer;
+    width: 100%;
+    /* Ensure it takes width in flex column */
+    max-width: 100%;
+    /* Prevent overflow */
 }
 
 .app-select:disabled {
@@ -355,6 +363,19 @@ footer {
     color: white;
 }
 
+
+.credit-text {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
 /* Modals */
 .modal {
     position: fixed;
@@ -415,46 +436,209 @@ footer {
 .admin-body {
     flex: 1;
     display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.admin-navigation {
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-breadcrumbs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.crumb {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.crumb:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.crumb.active {
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: default;
+    text-decoration: none;
+}
+
+.crumb::after {
+    content: '/';
+    margin-left: 8px;
+    color: var(--text-muted);
+}
+
+.crumb:last-child::after {
+    display: none;
+}
+
+.admin-content-area {
+    flex: 1;
+    display: flex;
+    position: relative;
     overflow: hidden;
 }
 
-.admin-sidebar {
-    width: 200px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 1rem;
+.admin-list-view,
+.admin-editor-view {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* List Items */
+.admin-list-item {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.admin-list-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--glass-border);
+}
+
+.item-name {
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-.tab-btn {
-    text-align: left;
-    padding: 10px;
+.item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
     background: transparent;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.btn-icon.delete:hover {
+    color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Add Button */
+.admin-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px dashed var(--success-color);
+    color: var(--success-color);
     border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 
-.tab-btn.active,
-.tab-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--primary-color);
+.admin-add-btn:hover {
+    background: rgba(34, 197, 94, 0.2);
 }
 
-.admin-view {
-    flex: 1;
-    padding: 1.5rem;
-    overflow-y: auto;
-    border-right: 1px solid var(--glass-border);
+/* Editor */
+.admin-editor-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #1e293b;
+    /* Match modal bg to cover list */
+    z-index: 10;
+}
+
+.editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--glass-border);
 }
 
 .admin-form {
-    width: 300px;
-    padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
+    width: 100%;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* Dobby Easter Egg */
+.dobby-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    text-align: center;
+    z-index: 5;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.dobby-container:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.dobby-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 60%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dobby-text {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.editor-input-group {
+    margin-bottom: 15px;
+}
+
+.editor-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }
 
 .danger-btn {
@@ -480,20 +664,5 @@ footer {
     .glass-container {
         padding: 1.5rem;
         width: 95%;
-    }
-
-    .admin-body {
-        flex-direction: column;
-    }
-
-    .admin-sidebar {
-        width: 100%;
-        flex-direction: row;
-        overflow-x: auto;
-    }
-
-    .admin-form {
-        width: 100%;
-        border-top: 1px solid var(--glass-border);
     }
 }

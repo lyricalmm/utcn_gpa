@@ -342,7 +342,19 @@ document.addEventListener('DOMContentLoaded', () => {
         resultDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
-    // --- Admin Logic ---
+    // --- Advanced Admin Logic ---
+    let adminPath = []; // Array of objects: { type: 'uni'|'fac'|'spec'|'year'|'sem', id: '...', name: '...' }
+    let currentEditItem = null; // { type, id, data } for editing
+
+    // Elements
+    const adminBreadcrumbs = document.getElementById('admin-breadcrumbs');
+    const adminListView = document.getElementById('admin-list-view');
+    const adminEditorView = document.getElementById('admin-editor-view');
+    const editorTitle = document.getElementById('editor-title');
+    const editorInputs = document.getElementById('editor-inputs');
+    const editorSaveBtn = document.getElementById('editor-save-btn');
+    const editorCancelBtn = document.getElementById('editor-cancel-btn');
+
     if (adminLoginBtn) {
         adminLoginBtn.addEventListener('click', () => {
             adminLoginModal.classList.add('visible');
@@ -362,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (password === 'admin123') {
                 adminLoginModal.classList.remove('visible');
                 adminPanelModal.classList.add('visible');
-                renderAdminView();
+                resetAdminView();
             } else {
                 alert('Parolă incorectă!');
             }
@@ -383,53 +395,292 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDbBtn.addEventListener('click', updateDB);
     }
 
-    // Admin Tabs
-    adminTabs.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            adminTabs.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentAdminTab = e.target.dataset.tab;
-            renderAdminView();
+    if (editorCancelBtn) {
+        editorCancelBtn.addEventListener('click', () => {
+            adminEditorView.classList.add('hidden');
         });
-    });
+    }
 
-    function renderAdminView() {
-        adminViewContainer.innerHTML = '';
-        adminFormInputs.innerHTML = '';
+    editorSaveBtn.addEventListener('click', saveEditorChanges);
 
-        const listContainer = document.createElement('div');
-        listContainer.className = 'admin-item-list';
+    function resetAdminView() {
+        adminPath = [];
+        renderAdmin();
+    }
 
-        if (currentAdminTab === 'universities') {
-            appState.db.universities.forEach(uni => {
-                const item = document.createElement('div');
-                item.className = 'admin-list-item';
-                item.textContent = uni.name;
-                listContainer.appendChild(item);
-            });
+    function renderAdmin() {
+        renderBreadcrumbs();
+        renderList();
+        adminEditorView.classList.add('hidden');
+    }
 
-            adminFormInputs.innerHTML = `
-                <p>Editează structura bazei de date (JSON):</p>
-                <textarea id="db-json-editor" style="width:100%; height:300px; background:rgba(0,0,0,0.3); color:white; border:1px solid #444; padding:10px; font-family:monospace;">${JSON.stringify(appState.db, null, 2)}</textarea>
-            `;
+    function renderBreadcrumbs() {
+        adminBreadcrumbs.innerHTML = '';
 
-            adminSaveBtn.onclick = () => {
-                try {
-                    const newDb = JSON.parse(document.getElementById('db-json-editor').value);
-                    appState.db = newDb;
-                    saveDB();
-                    if (appState.mode === 'database') {
-                        setMode('database');
-                    }
-                    alert('Baza de date actualizată!');
-                } catch (e) {
-                    alert('Eroare JSON: ' + e.message);
-                }
+        // Root crumb
+        const rootCrumb = document.createElement('span');
+        rootCrumb.className = `crumb ${adminPath.length === 0 ? 'active' : ''}`;
+        rootCrumb.textContent = 'Universități';
+        rootCrumb.onclick = () => {
+            adminPath = [];
+            renderAdmin();
+        };
+        adminBreadcrumbs.appendChild(rootCrumb);
+
+        // Path crumbs
+        adminPath.forEach((item, index) => {
+            const crumb = document.createElement('span');
+            crumb.className = `crumb ${index === adminPath.length - 1 ? 'active' : ''}`;
+            crumb.textContent = item.name;
+            crumb.onclick = () => {
+                adminPath = adminPath.slice(0, index + 1);
+                renderAdmin();
             };
-        } else {
-            listContainer.innerHTML = '<p style="color:var(--text-muted); padding:1rem;">Folosește editorul JSON din tab-ul "Universități" pentru a edita structura completă.</p>';
+            adminBreadcrumbs.appendChild(crumb);
+        });
+    }
+
+    function getDataAtCurrentLevel() {
+        let currentData = appState.db.universities;
+        let parent = appState.db;
+
+        if (adminPath.length > 0) {
+            const uni = appState.db.universities.find(u => u.id === adminPath[0].id);
+            if (!uni) return null;
+            if (adminPath.length === 1) return { list: uni.faculties || [], type: 'fac', parent: uni };
+
+            const fac = uni.faculties.find(f => f.id === adminPath[1].id);
+            if (!fac) return null;
+            if (adminPath.length === 2) return { list: fac.specializations || [], type: 'spec', parent: fac };
+
+            const spec = fac.specializations.find(s => s.id === adminPath[2].id);
+            if (!spec) return null;
+            // Years are objects, convert to array for consistent handling logic
+            // But 'years' is an object keyed by year number.
+            if (adminPath.length === 3) {
+                const yearsList = Object.keys(spec.years || {}).map(y => ({ id: y, name: `Anul ${y}` }));
+                return { list: yearsList, type: 'year', parent: spec };
+            }
+
+            const yearData = spec.years[adminPath[3].id];
+            if (!yearData) return null;
+            if (adminPath.length === 4) {
+                // Semesters
+                const semList = Object.keys(yearData || {}).map(s => ({ id: s, name: `Semestrul ${s}` }));
+                return { list: semList, type: 'sem', parent: yearData };
+            }
+
+            const semesterSubjects = yearData[adminPath[4].id]; // Array of subjects
+            return { list: semesterSubjects || [], type: 'subj', parent: yearData, semId: adminPath[4].id };
         }
 
-        adminViewContainer.appendChild(listContainer);
+        return { list: appState.db.universities, type: 'uni', parent: appState.db };
+    }
+
+    function renderList() {
+        adminListView.innerHTML = '';
+        const levelData = getDataAtCurrentLevel();
+        if (!levelData) {
+            adminListView.innerHTML = '<p>Eroare la încărcarea datelor.</p>';
+            return;
+        }
+
+        const { list, type } = levelData;
+
+        if (list.length === 0) {
+            adminListView.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Nu există date aici.</p>';
+        }
+
+        list.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'admin-list-item';
+
+            // Name logic
+            let name = item.name;
+            if (type === 'subj') name = `${item.name} (${item.credits} credite)`;
+
+            el.innerHTML = `
+                <div class="item-name" onclick="enterItem('${item.id}', '${item.name ? item.name.replace(/'/g, "\\'") : ''}')">
+                    ${type !== 'subj' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>' : ''}
+                    <span>${name}</span>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-icon edit" title="Editează"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                    <button class="btn-icon delete" title="Șterge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg></button>
+                </div>
+            `;
+
+            // Interaction handlers
+            // Prevent click on name triggering if clicking actions
+            el.querySelector('.item-name').onclick = (e) => {
+                if (type === 'subj') {
+                    openEditor('edit', item, index);
+                } else {
+                    enterItem(item.id, item.name);
+                }
+            }
+
+            el.querySelector('.edit').onclick = (e) => { e.stopPropagation(); openEditor('edit', item, index); };
+            el.querySelector('.delete').onclick = (e) => { e.stopPropagation(); deleteItem(index); };
+
+            adminListView.appendChild(el);
+        });
+
+        // Add Button
+        const addBtn = document.createElement('div');
+        addBtn.className = 'admin-add-btn';
+        addBtn.innerHTML = '+ Adaugă ' + getLevelName(type);
+        addBtn.onclick = () => openEditor('add');
+        adminListView.appendChild(addBtn);
+    }
+
+    window.enterItem = function (id, name) {
+        // Push to breadcrumb
+        adminPath.push({ id: id, name: name });
+        renderAdmin();
+    };
+
+    function getLevelName(type) {
+        switch (type) {
+            case 'uni': return 'Universitate';
+            case 'fac': return 'Facultate';
+            case 'spec': return 'Specializare';
+            case 'year': return 'An';
+            case 'sem': return 'Semestru';
+            case 'subj': return 'Materie';
+            default: return 'Element';
+        }
+    }
+
+    function deleteItem(index) {
+        if (!confirm("Ești sigur că vrei să ștergi acest element?")) return;
+
+        const levelData = getDataAtCurrentLevel();
+        const { list, type, parent, semId } = levelData;
+
+        if (Array.isArray(list)) {
+            list.splice(index, 1);
+        } else {
+            // It's an object property delete? No, getDataAtCurrentLevel returns list as array for year/sem
+            // But we need to update the actual parent object if it was a mapped array
+            // Special handling for Year and Sem which are object keys in the DB
+        }
+
+        // Apply deletion to DB reference
+        if (type === 'year') {
+            // Parent is spec, list is array of {id, name}
+            // We need to delete spec.years[list[index].id]
+            delete parent.years[list[index].id];
+        } else if (type === 'sem') {
+            delete parent[list[index].id];
+        } else {
+            // Valid for uni, fac, spec, subj where 'list' IS the reference to the array in DB
+            // (Subjects is array, Uni is array, Fac is array, Spec is array)
+            // Wait, getDataAtCurrentLevel returns the actual array for those.
+        }
+
+        saveDB();
+        renderAdmin();
+        // Refresh main UI if needed
+        if (appState.mode === 'database') setMode('database');
+    }
+
+    function openEditor(mode, item = null, index = null) {
+        const levelData = getDataAtCurrentLevel();
+        const { type } = levelData;
+
+        currentEditItem = { mode, type, index, item };
+
+        editorTitle.textContent = (mode === 'add' ? 'Adaugă ' : 'Editează ') + getLevelName(type);
+        editorInputs.innerHTML = '';
+
+        if (type === 'subj') {
+            createInput('Nume Materie', 'text', 'name', item ? item.name : '');
+            createInput('Credite', 'number', 'credits', item ? item.credits : '');
+        } else {
+            createInput('Nume', 'text', 'name', item ? item.name : '');
+            if (type !== 'sem' && type !== 'year') {
+                createInput('ID (unic)', 'text', 'id', item ? item.id : '', mode === 'edit'); // Lock ID on edit if complex
+            } else {
+                // Year/Sem ID is the number itself 1, 2, 3...
+                createInput('Număr (ex: 1, 2)', 'number', 'id', item ? item.id : '', mode === 'edit');
+            }
+        }
+
+        adminEditorView.classList.remove('hidden');
+    }
+
+    function createInput(label, type, key, value, disabled = false) {
+        const div = document.createElement('div');
+        div.className = 'editor-input-group';
+        div.innerHTML = `
+            <label>${label}</label>
+            <input type="${type}" data-key="${key}" value="${value}" ${disabled ? 'disabled' : ''}>
+        `;
+        editorInputs.appendChild(div);
+    }
+
+    function saveEditorChanges() {
+        const inputs = editorInputs.querySelectorAll('input');
+        const newData = {};
+        inputs.forEach(input => newData[input.dataset.key] = input.value);
+
+        const { mode, type, index, item } = currentEditItem;
+        const levelData = getDataAtCurrentLevel();
+        const { list, parent } = levelData;
+
+        // Validation
+        if (!newData.name && !newData.id) { alert("Completeaza campurile!"); return; }
+
+        if (type === 'subj') {
+            const subject = { name: newData.name, credits: parseInt(newData.credits) };
+            if (mode === 'add') {
+                list.push(subject);
+            } else {
+                list[index] = subject;
+            }
+        } else if (type === 'uni' || type === 'fac' || type === 'spec') {
+            if (mode === 'add') {
+                const newObj = { id: newData.id, name: newData.name };
+                if (type === 'uni') newObj.faculties = [];
+                if (type === 'fac') newObj.specializations = [];
+                if (type === 'spec') newObj.years = {};
+                list.push(newObj);
+            } else {
+                list[index].name = newData.name;
+                // We don't change ID for simplicity, or we need to check collision
+            }
+        } else if (type === 'year') {
+            // Parent is spec.years
+            const yearNum = newData.id;
+            if (mode === 'add') {
+                if (parent.years[yearNum]) { alert("Anul există deja!"); return; }
+                parent.years[yearNum] = {};
+            } else {
+                // Rename year? Complex because key is used. Only allow name change? 
+                // Years don't really have names in data, just "years: { 1: ... }"
+                // But our UI shows "Anul 1". 
+                // If we want to change year ID, we have to move data.
+                // For now, let's say we only add years, not edit ID easily.
+                // Actually map logic used 'id' as the key.
+                alert("Nu poți edita numărul anului momentan. Șterge și adaugă din nou.");
+                return;
+            }
+        } else if (type === 'sem') {
+            // Parent is year (object with keys 1, 2)
+            const semNum = newData.id;
+            if (mode === 'add') {
+                if (parent[semNum]) { alert("Semestrul există deja!"); return; }
+                parent[semNum] = [];
+            } else {
+                alert("Nu poți edita numărul semestrului. Șterge și adaugă din nou.");
+                return;
+            }
+        }
+
+        saveDB();
+        adminEditorView.classList.add('hidden');
+        renderAdmin();
+        if (appState.mode === 'database') setMode('database');
     }
 });
