@@ -99,6 +99,38 @@ const UNIVERSITY_DATA = {
                             }
                         },
                         {
+                            id: 'ii',
+                            name: 'Inginerie Industrială',
+                            years: {
+                                1: {
+                                    1: [
+                                        { name: 'Analiza matematică', credits: 4 },
+                                        { name: 'Algebră liniară, geometrie analitică', credits: 3 },
+                                        { name: 'Fizică', credits: 4 },
+                                        { name: 'Chimie', credits: 3 },
+                                        { name: 'Programarea calculatoarelor I', credits: 4 },
+                                        { name: 'Știința și ingineria materialelor I', credits: 4 },
+                                        { name: 'Geometrie descriptivă și desen tehnic', credits: 4 },
+                                        { name: 'Limbi moderne I (Engleză)', credits: 2 },
+                                        { name: 'Educație fizică și sport I', credits: 2 }
+                                    ],
+                                    2: [
+                                        { name: 'Metode numerice și matematici speciale', credits: 3 },
+                                        { name: 'Comunicare', credits: 2 },
+                                        { name: 'Mecanică I', credits: 4 },
+                                        { name: 'Desen tehnic și infografică', credits: 3 },
+                                        { name: 'Programarea calculatoarelor II', credits: 3 },
+                                        { name: 'Bazele ingineriei industriale', credits: 3 },
+                                        { name: 'Știința și ingineria materialelor II', credits: 3 },
+                                        { name: 'Electrotehnică și mașini electrice', credits: 3 },
+                                        { name: 'Limbi moderne II (Engleză)', credits: 2 },
+                                        { name: 'Educație fizică și sport II', credits: 1 },
+                                        { name: 'Practică de domeniu I', credits: 3 }
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             id: 'im',
                             name: 'Inginerie Managerială',
                             years: {

@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load DB from localStorage or use default from data.js
     function loadDB() {
-        // Bump version to v4 to force refresh of data
-        const saved = localStorage.getItem('gpa_app_db_v4');
+        // Bump version to v5 to force refresh of data
+        const saved = localStorage.getItem('gpa_app_db_v5');
         if (saved) {
             try {
                 appState.db = JSON.parse(saved);
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveDB() {
-        localStorage.setItem('gpa_app_db_v4', JSON.stringify(appState.db));
+        localStorage.setItem('gpa_app_db_v5', JSON.stringify(appState.db));
     }
 
     function resetDB() {
