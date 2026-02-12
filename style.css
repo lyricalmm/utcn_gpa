@@ -433,6 +433,7 @@ footer {
     justify-content: flex-end;
 }
 
+/* Admin Interface - Global Styles */
 .admin-body {
     flex: 1;
     display: flex;
@@ -579,7 +580,6 @@ footer {
     left: 0;
     height: 100%;
     background: #1e293b;
-    /* Match modal bg to cover list */
     z-index: 10;
 }
 
@@ -597,7 +597,36 @@ footer {
     border-top: 1px solid var(--glass-border);
 }
 
-/* Dobby Easter Egg */
+.editor-input-group {
+    margin-bottom: 15px;
+}
+
+.editor-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.danger-btn {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Dobby Easter Egg - Global */
 .dobby-container {
     position: fixed;
     bottom: 20px;
@@ -630,39 +659,16 @@ footer {
     letter-spacing: 1px;
 }
 
-.editor-input-group {
-    margin-bottom: 15px;
-}
-
-.editor-input-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.danger-btn {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--danger-color);
-    border: 1px solid var(--danger-color);
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.primary {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
 /* Responsive */
 @media (max-width: 600px) {
     .glass-container {
         padding: 1.5rem;
         width: 95%;
+    }
+
+    .dobby-container {
+        position: static;
+        margin: 30px auto;
+        opacity: 0.8;
     }
 }
