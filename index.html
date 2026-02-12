@@ -4,31 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University GPA Calculator</title>
+    <title>Calculator Medie Facultate - Premium</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="background-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+    <div class="background-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
     </div>
 
-    <main class="app-container">
+    <main class="glass-container">
         <header>
-            <h1>Calculator Medie Semestrială</h1>
-            <p>Introduceți materiile, numărul de credite și notele obținute pentru a calcula media ponderată.</p>
+            <h1>Calculator Medie</h1>
+            <p class="subtitle">Simulează-ți succesul academic</p>
         </header>
 
         <section class="mode-selector">
-            <div class="toggle-container">
-                <button id="mode-manual" class="mode-btn active">Manual</button>
-                <button id="mode-database" class="mode-btn">Predefinit (Universitate)</button>
-            </div>
+            <button id="mode-manual" class="mode-btn active">Manual</button>
+            <button id="mode-database" class="mode-btn">Predefinit (UTCN)</button>
         </section>
 
         <section id="database-controls" class="database-controls hidden">
@@ -48,7 +46,6 @@
                     <option value="">Alege Anul</option>
                 </select>
             </div>
-            <!-- Semester Select on its own line/group -->
             <div class="select-group" style="margin-top: 1rem;">
                 <select id="select-semester" class="app-select" disabled>
                     <option value="">Alege Semestrul</option>
@@ -57,96 +54,82 @@
         </section>
 
         <section class="calculator-section">
-            <div class="input-header">
-                <span class="col-subject">Materie</span>
-                <span class="col-credits">Credite</span>
-                <span class="col-grade">Notă</span>
-                <span class="col-action"></span>
+            <div class="subjects-header">
+                <span>Materie</span>
+                <span>Credite</span>
+                <span>Notă</span>
+                <span></span>
+            </div>
+            <div id="subjects-container" class="subjects-container">
+                <!-- Rows will be added here -->
             </div>
 
-            <div id="subjects-container">
-                <!-- Rows will be added dynamically here -->
-                <div class="subject-row">
-                    <input type="text" placeholder="Ex: Analiză Matematică" class="input-subject">
-                    <input type="number" placeholder="5" class="input-credits" min="1" max="30">
-                    <input type="number" placeholder="10" class="input-grade" min="1" max="10">
-                    <button class="btn-remove" title="Șterge materia">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="controls">
-                <button id="add-subject-btn" class="btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Adaugă Materie
-                </button>
-            </div>
+            <button id="add-subject-btn" class="add-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Adaugă Materie
+            </button>
         </section>
 
-        <section class="results-section">
-            <button id="calculate-btn" class="btn-primary">Calculează Media</button>
-
-            <div id="result-display" class="result-box hidden">
+        <section class="result-section hidden" id="result-display">
+            <div class="result-card">
                 <span class="result-label">Media Ta Semestrială</span>
                 <span class="result-value">0.00</span>
-                <span class="result-message">Excelent!</span>
+                <p class="result-message">Excelent!</p>
             </div>
         </section>
+
+        <footer>
+            <button id="calculate-btn" class="calculate-btn">Calculează Media</button>
+        </footer>
     </main>
 
     <div class="admin-trigger">
+        <button id="update-db-btn" class="btn-text" style="color: rgba(255,255,255,0.7); margin-right: 15px;">↻
+            Actualizează Datele</button>
         <button id="admin-login-btn" class="btn-text">Admin Login</button>
     </div>
 
     <!-- Admin Login Modal -->
-    <div id="admin-login-modal" class="modal hidden">
+    <div id="admin-login-modal" class="modal">
         <div class="modal-content">
             <h2>Admin Login</h2>
-            <input type="password" id="admin-password" placeholder="Introduceți parola">
+            <input type="password" id="admin-password" placeholder="Parola">
             <div class="modal-actions">
-                <button id="btn-login-cancel" class="btn-text">Anulează</button>
-                <button id="btn-login-submit" class="btn-primary">Logare</button>
+                <button id="btn-login-cancel">Anulează</button>
+                <button id="btn-login-submit" class="primary">Login</button>
             </div>
         </div>
     </div>
 
     <!-- Admin Panel Modal -->
-    <div id="admin-panel-modal" class="modal hidden">
-        <div class="modal-content large-modal">
+    <div id="admin-panel-modal" class="modal large-modal">
+        <div class="modal-content glass-panel">
             <div class="modal-header">
                 <h2>Panou Administrare</h2>
-                <div class="modal-header-actions">
-                    <button id="admin-reset-db" class="btn-text"
-                        style="color:var(--danger-color); margin-right:1rem;">Resetare DB</button>
-                    <button id="admin-close" class="btn-icon">&times;</button>
+                <div>
+                    <button id="admin-reset-db" class="danger-btn" style="margin-right:10px;">Reset DB</button>
+                    <button id="admin-close" class="close-btn">&times;</button>
                 </div>
             </div>
-
-            <div class="admin-tabs">
-                <button class="tab-btn active" data-tab="universities">Universități</button>
-                <button class="tab-btn" data-tab="faculties">Facultăți</button>
-                <button class="tab-btn" data-tab="specializations">Specializări</button>
-                <button class="tab-btn" data-tab="subjects">Materii & Credite</button>
-            </div>
-
-            <div class="admin-tab-content">
-                <!-- Content will be injected by JS based on tab -->
-                <div id="admin-view-container"></div>
-
-                <div class="admin-edit-form">
-                    <h3>Editează JSON</h3>
-                    <div id="admin-form-inputs"></div>
-                    <button id="admin-save-btn" class="btn-primary">Salvează Modificările</button>
+            <div class="admin-body">
+                <div class="admin-sidebar">
+                    <button class="tab-btn active" data-tab="universities">Universități / Editare JSON</button>
+                    <button class="tab-btn" data-tab="faculties">Facultăți</button>
+                    <button class="tab-btn" data-tab="specializations">Specializări</button>
                 </div>
+                <div class="admin-view" id="admin-view-container">
+                    <!-- Dynamic Content -->
+                </div>
+                <div class="admin-form" id="admin-form-inputs">
+                    <!-- Edit Forms -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="admin-save-btn" class="primary">Salvează Modificările</button>
             </div>
         </div>
     </div>

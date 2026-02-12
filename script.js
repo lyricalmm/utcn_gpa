@@ -54,6 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Manual Update from data.js
+    function updateDB() {
+        if (typeof UNIVERSITY_DATA !== 'undefined') {
+            if (confirm("Această acțiune va reîncărca datele din fișierul sursă și va șterge orice modificare locală. Continui?")) {
+                appState.db = UNIVERSITY_DATA;
+                saveDB();
+                alert("Baza de date a fost actualizată!");
+                location.reload();
+            }
+        } else {
+            alert("Fișierul de date (data.js) nu a fost găsit.");
+        }
+    }
+
     loadDB();
 
     // --- DOM Elements ---
@@ -89,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminFormInputs = document.getElementById('admin-form-inputs');
     const adminSaveBtn = document.getElementById('admin-save-btn');
     const adminTabs = document.querySelectorAll('.tab-btn');
+
+    // Update DB Button
+    const updateDbBtn = document.getElementById('update-db-btn');
 
     let currentAdminTab = 'universities';
 
@@ -360,6 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (adminResetDb) {
         adminResetDb.addEventListener('click', resetDB);
+    }
+
+    if (updateDbBtn) {
+        updateDbBtn.addEventListener('click', updateDB);
     }
 
     // Admin Tabs
